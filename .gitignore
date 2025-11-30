@@ -1,0 +1,51 @@
+.emacs.desktop*
+db.sqlite3
+# Bytecode
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+
+# Django stuff
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3           # ← only if you don't want to share dev DB
+db.sqlite3-journal
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# PyCharm/IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+local_settings.py
+local.py
+
+# Migrations (optional debate — most teams DO commit them)
+# timestamp/migrations/0001_initial.py   # ← usually committed!
+# But if you want to ignore: timestamp/migrations/*
+
+# Media/uploads (never commit user uploads)
+media/
+
+# Static files if collected
+/static/
+
+# Environment variables
+.env
+.env.local
