@@ -29,17 +29,39 @@
     <h1>🚽 Bathroom Logger 🚽</h1>
 
     <div class="buttons">
-        <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" name="action" value="pee" class="pee">💦 Pee</button>
-        </form>
-
-        <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" name="action" value="poo" class="poo">💩 Poo</button>
-        </form>
+        <button onclick="log('pee')" class="pee">Pee</button>
+        <button onclick="log('poo')" class="poo">Poo</button>
     </div>
-
+    
+    <div id="log" class="log">
+        <h2>Recent activity</h2>
+        {% include "timestamp/log_partial.html" %}
+    </div>
+    
+    <script>
+    async function log(action) {
+        const btn = event.target;
+        btn.disabled = true;                 // prevent double-tap
+        btn.style.opacity = 0.6;
+    
+        await fetch("", {                   // "" = same URL
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({action})
+        });
+    
+        // Reload only the log part
+        const resp = await fetch("{{ request.path }}?partial=1");
+        document.getElementById("log").innerHTML = await resp.text();
+    
+        btn.disabled = false;
+        btn.style.opacity = 1;
+    }
+    </script>
+    
     <div class="log">
         <h2>Recent activity (last 50)</h2>
         {% for entry in entries %}
