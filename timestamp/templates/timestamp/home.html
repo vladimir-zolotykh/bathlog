@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pee & Poo Logger</title>
+    <title>Pee & Pill Logger</title>
     <style>
         body { font-family: system-ui, sans-serif; text-align: center; padding: 40px; background: #f4f4f4; }
         h1 { margin-bottom: 50px; }
@@ -17,20 +17,20 @@
             cursor: pointer;
             min-width: 250px;
         }
-        .pee { background: #ffeb3b; }   /* yellow */
-        .poo { background: #8b4513; color: white; } /* brown */
+        .pee { background: #ffeb3b; }          /* yellow */
+        .pill { background: #4caf50; color: white; }  /* green pill */
         .log { margin-top: 60px; }
         .entry { padding: 8px; font-size: 1.2rem; }
         .pee-entry { color: #b8860b; }
-        .poo-entry { color: #654321; }
+        .pill-entry { color: #2e7d32; }
     </style>
 </head>
 <body>
-    <h1>🚽 Bathroom Logger 🚽</h1>
+    <h1>Pee & Pill Logger</h1>
 
     <div class="buttons">
         <button onclick="log('pee')" class="pee">Pee</button>
-        <button onclick="log('poo')" class="poo">Poo</button>
+        <button onclick="log('pill')" class="pill">Pill</button>
     </div>
     
     <div id="log" class="log">
@@ -41,10 +41,10 @@
     <script>
     async function log(action) {
         const btn = event.target;
-        btn.disabled = true;                 // prevent double-tap
+        btn.disabled = true;
         btn.style.opacity = 0.6;
     
-        await fetch("", {                   // "" = same URL
+        await fetch("", {
             method: "POST",
             headers: {
                 "X-Requested-With": "XMLHttpRequest",
@@ -53,7 +53,6 @@
             body: new URLSearchParams({action})
         });
     
-        // Reload only the log part
         const resp = await fetch("{{ request.path }}?partial=1");
         document.getElementById("log").innerHTML = await resp.text();
     
@@ -65,9 +64,9 @@
     <div class="log">
         <h2>Recent activity (last 50)</h2>
         {% for entry in entries %}
-            <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}poo-entry{% endif %}">
+            <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}pill-entry{% endif %}">
                 {{ entry.timestamp|date:"Y-m-d H:i:s" }} — 
-                {% if entry.action == 'pee' %}💦 Pee{% else %}💩 Poo{% endif %}
+                {% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}
             </div>
         {% empty %}
             <p>No entries yet. Go ahead!</p>

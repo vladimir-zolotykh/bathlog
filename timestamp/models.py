@@ -5,7 +5,7 @@ from django.utils import timezone
 class LogEntry(models.Model):
     ACTION_CHOICES = [
         ("pee", "Pee"),
-        ("poo", "Poo"),
+        ("pill", "Pill"),  # ← changed from "poo"
     ]
 
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)

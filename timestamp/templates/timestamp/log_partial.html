@@ -1,8 +1,8 @@
 {# timestamp/templates/timestamp/log_partial.html #}
 {% for entry in entries %}
-    <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}poo-entry{% endif %}">
+    <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}pill-entry{% endif %}">
         {{ entry.timestamp|date:"M d H:i" }} —
-        {% if entry.action == 'pee' %}Pee{% else %}Poo{% endif %}
+        {% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}
     </div>
 {% empty %}
     <p>No entries yet — start logging!</p>
