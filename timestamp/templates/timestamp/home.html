@@ -43,24 +43,30 @@
         const btn = event.target;
         btn.disabled = true;
         btn.style.opacity = 0.6;
-    
-        await fetch("", {
+        
+        // --- STEP 1: POST to the new log_create URL ---
+        await fetch("{% url 'log_create' %}", {
             method: "POST",
             headers: {
-                "X-Requested-With": "XMLHttpRequest",
+                // Note: X-Requested-With and X-CSRFToken are still required for AJAX/Django
+                "X-Requested-With": "XMLHttpRequest", 
                 "X-CSRFToken": "{{ csrf_token }}"
             },
             body: new URLSearchParams({action})
         });
-    
-        const resp = await fetch("{{ request.path }}?partial=1");
+        
+        // --- STEP 2: GET the updated log list fragment from log_list view ---
+        // Note: 'log_list' is the name you set in your timestamp/urls.py for the root path ""
+        const resp = await fetch("{% url 'log_list' %}?partial=1"); 
+        
+        // Replace the content of the log div with the new HTML fragment
         document.getElementById("log").innerHTML = await resp.text();
-    
+        
         btn.disabled = false;
         btn.style.opacity = 1;
     }
     </script>
-    
+        
     <div class="log">
         <h2>Recent activity (last 50)</h2>
         {% for entry in entries %}
