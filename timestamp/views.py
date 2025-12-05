@@ -7,7 +7,7 @@ from django.http import HttpResponse
 def home(request):
     if request.method == "POST":
         action = request.POST.get("action")
-        if action in ["pee", "poo"]:
+        if action in ["pee", "pill"]:
             LogEntry.objects.create(action=action)
         return (
             redirect("home")
