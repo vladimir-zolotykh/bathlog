@@ -17,10 +17,11 @@
             cursor: pointer;
             min-width: 250px;
         }
-        .pee { background: #ffeb3b; }          /* yellow */
+        .action-button { font-size: 1.2rem; padding: 5px 10px; margin-left: 15px; background: #f44336; color: white; border-radius: 5px;}
+        .pee { background: #ffeb3b; }        /* yellow */
         .pill { background: #4caf50; color: white; }  /* green pill */
         .log { margin-top: 60px; }
-        .entry { padding: 8px; font-size: 1.2rem; }
+        .entry { padding: 8px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .pee-entry { color: #b8860b; }
         .pill-entry { color: #2e7d32; }
     </style>
@@ -33,50 +34,66 @@
         <button onclick="log('pill')" class="pill">Pill</button>
     </div>
     
-    <div id="log" class="log">
+    <div id="log-container" class="log"> 
         <h2>Recent activity</h2>
         {% include "timestamp/log_partial.html" %}
     </div>
     
     <script>
+    // Helper function to re-fetch and update the log list
+    async function updateLogList() {
+        // Fetch the updated log list fragment from log_list view
+        const resp = await fetch("{% url 'log_list' %}?partial=1"); 
+        
+        // Replace the content of the log div with the new HTML fragment
+        document.getElementById("log-container").innerHTML = await resp.text();
+    }
+    
+    // Function for creating a new log entry (Pee/Pill)
     async function log(action) {
         const btn = event.target;
         btn.disabled = true;
         btn.style.opacity = 0.6;
         
-        // --- STEP 1: POST to the new log_create URL ---
+        // --- STEP 1: POST to the new log_create URL (Creation) ---
         await fetch("{% url 'log_create' %}", {
             method: "POST",
             headers: {
-                // Note: X-Requested-With and X-CSRFToken are still required for AJAX/Django
                 "X-Requested-With": "XMLHttpRequest", 
                 "X-CSRFToken": "{{ csrf_token }}"
             },
             body: new URLSearchParams({action})
         });
         
-        // --- STEP 2: GET the updated log list fragment from log_list view ---
-        // Note: 'log_list' is the name you set in your timestamp/urls.py for the root path ""
-        const resp = await fetch("{% url 'log_list' %}?partial=1"); 
-        
-        // Replace the content of the log div with the new HTML fragment
-        document.getElementById("log").innerHTML = await resp.text();
+        // --- STEP 2: Update the log list dynamically ---
+        await updateLogList();
         
         btn.disabled = false;
         btn.style.opacity = 1;
     }
-    </script>
+
+    // Function for removing a log entry
+    async function removeLog(logId) {
+        if (!confirm("Are you sure you want to delete this log entry?")) {
+            return;
+        }
         
-    <div class="log">
-        <h2>Recent activity (last 50)</h2>
-        {% for entry in entries %}
-            <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}pill-entry{% endif %}">
-                {{ entry.timestamp|date:"Y-m-d H:i:s" }} — 
-                {% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}
-            </div>
-        {% empty %}
-            <p>No entries yet. Go ahead!</p>
-        {% endfor %}
-    </div>
-</body>
+        // --- STEP 1: POST (or DELETE) to the new log_delete URL ---
+        // We will use POST here for simplicity with Django's CSRF token handling, 
+        // passing the logId in the body, which will be handled by the log_delete view.
+        await fetch("{% url 'log_delete' %}", {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest", 
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({id: logId}) // Send the ID of the record to delete
+        });
+
+        // --- STEP 2: Update the log list dynamically ---
+        await updateLogList();
+    }
+    </script>
+    
+    </body>
 </html>

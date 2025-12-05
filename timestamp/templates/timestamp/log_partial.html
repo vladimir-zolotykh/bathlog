@@ -1,9 +1,12 @@
 {# timestamp/templates/timestamp/log_partial.html #}
+<h2>Recent activity (last 50)</h2>
 {% for entry in entries %}
     <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}pill-entry{% endif %}">
-        {{ entry.timestamp|date:"M d H:i" }} —
+        {{ entry.timestamp|date:"Y-m-d H:i:s" }} — 
         {% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}
+        
+        <button onclick="removeLog({{ entry.pk }})" class="action-button">Remove</button>
     </div>
 {% empty %}
-    <p>No entries yet — start logging!</p>
+    <p>No entries yet. Go ahead!</p>
 {% endfor %}

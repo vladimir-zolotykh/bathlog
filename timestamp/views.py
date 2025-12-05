@@ -1,7 +1,7 @@
 # timestamp/views.py
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from .models import LogEntry  # Assuming LogEntry is imported here
 
@@ -31,3 +31,18 @@ def log_create(request):
         if not request.headers.get("X-Requested-With")
         else HttpResponse("")
     )
+
+
+@require_POST
+def log_delete(request):
+    """Handles deletion of a LogEntry via POST request (simulating a DELETE)."""
+
+    log_id = request.POST.get("id")
+    if not log_id:
+        return HttpResponseBadRequest("Missing log ID.")
+    try:
+        entry = get_object_or_404(LogEntry, pk=log_id)
+        entry.delete()
+    except Exception as e:
+        return HttpResponseBadRequest(f"Error deleting entry: {e}")
+    return HttpResponse("")
