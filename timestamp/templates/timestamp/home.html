@@ -28,12 +28,20 @@
         .pee { background: #ffeb3b; }        /* yellow */
         .pill { background: #4caf50; color: white; }  /* green pill */
         .log { margin-top: 40px; }
-        .entry {padding: 1px 0;        /* was 8px */
-                font-size: 1rem;       /* was 1.2rem */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 2px;             /* reduce spacing between timestamp and button */}        
+        .entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            margin: 6px 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            line-height: 1.4;
+            font-size: 1.05rem;
+            height: 48px;               /* fixed short height */
+            box-sizing: border-box;
+        }        
         .pee-entry {color: #b8860b;}
         .pill-entry {color: #2e7d32;}
     </style>
