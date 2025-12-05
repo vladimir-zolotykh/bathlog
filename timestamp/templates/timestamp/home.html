@@ -17,13 +17,25 @@
             cursor: pointer;
             min-width: 250px;
         }
-        .action-button { font-size: 1.2rem; padding: 5px 10px; margin-left: 15px; background: #f44336; color: white; border-radius: 5px;}
+        .action-button { 
+            font-size: 0.9rem;     /* was 1.2rem */
+            padding: 1px 3px;      /* was 5px 10px */
+            margin-left: 10px;     /* was 15px */
+            border-radius: 4px;    /* was 5px */
+            background: #f44336; 
+            color: white; 
+        }
         .pee { background: #ffeb3b; }        /* yellow */
         .pill { background: #4caf50; color: white; }  /* green pill */
-        .log { margin-top: 60px; }
-        .entry { padding: 8px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-        .pee-entry { color: #b8860b; }
-        .pill-entry { color: #2e7d32; }
+        .log { margin-top: 40px; }
+        .entry {padding: 1px 0;        /* was 8px */
+                font-size: 1rem;       /* was 1.2rem */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;             /* reduce spacing between timestamp and button */}        
+        .pee-entry {color: #b8860b;}
+        .pill-entry {color: #2e7d32;}
     </style>
 </head>
 <body>
