@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.timezone import localtime
 
 
 class LogEntry(models.Model):
@@ -16,3 +17,10 @@ class LogEntry(models.Model):
 
     class Meta:
         ordering = ["-timestamp"]
+
+    def timestamp_local(self):
+        """Return the timestamp in the local timezone (configured in settings.TIME_ZONE)"""
+        return localtime(self.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+
+    timestamp_local.short_description = "Timestamp (local)"  # column header in admin
+    timestamp_local.admin_order_field = "timestamp"  # allows sorting by this column
