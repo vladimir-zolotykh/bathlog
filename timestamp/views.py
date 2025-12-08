@@ -7,6 +7,10 @@ from django.db.models import F, FloatField, Window
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Lag
 from django.db.models.expressions import ExpressionWrapper
+from django.db.models import Window
+from django.db.models.functions import Lag, Lead
+from django.db.models.fields import DurationField
+
 
 from .models import LogEntry
 
@@ -14,25 +18,31 @@ from .models import LogEntry
 def log_list(request):
     """Handles displaying the log entries and rendering the main page."""
 
-    # entries = (
-    #     LogEntry.objects.order_by()
-    #     .order_by("timestamp")
-    #     .annotate(
-    #         prev_timestamp=Window(
-    #             expression=Lag("timestamp"),
-    #             order_by=F("timestamp").asc(),
-    #         )
-    #     )
-    #     .annotate(
-    #         time_diff=ExpressionWrapper(
-    #             RawSQL(
-    #                 "strftime('%%s', timestamp) - strftime('%%s', prev_timestamp)",
-    #                 [],  # required params argument
-    #             ),
-    #             output_field=FloatField(),
-    #         )
-    #     )
-    # )
+    qs = LogEntry.objects.annotate(
+        prev_ts=Window(expression=Lag("timestamp"), order_by=F("timestamp").asc()),
+        next_ts=Window(expression=Lead("timestamp"), order_by=F("timestamp").asc()),
+    ).annotate(
+        gap_prev=ExpressionWrapper(
+            F("timestamp") - F("prev_ts"), output_field=DurationField()
+        ),
+        gap_next=ExpressionWrapper(
+            F("next_ts") - F("timestamp"), output_field=DurationField()
+        ),
+    )
+    gap_min = 100000
+    gap_max = 0
+    for entry in qs:
+        gaps = [
+            g.total_seconds() for g in [entry.gap_prev, entry.gap_next] if g is not None
+        ]
+        entry.min_gap = min(gaps) if gaps else None
+        entry.max_gap = max(gaps) if gaps else None
+        if entry.min_gap < gap_min:
+            gap_min = entry.min_gap
+        if entry.max_gap > gap_max:
+            gap_max = entry.max_gap
+        # print(entry, entry.min_gap, entry.max_gap)
+
     # diffs = entries.exclude(prev_timestamp__isnull=True)
 
     # max_gap = diffs.order_by("-time_diff").first()
@@ -42,14 +52,14 @@ def log_list(request):
     # min_gap = min_gap_entry.time_diff if min_gap_entry else None
 
     # Limit entries for display
-    entries_for_display = LogEntry.objects.all()[:50]
-    min_gap, max_gap = 1, 3
+    # entries_for_display = LogEntry.objects.all()[:50]
+    entries_for_display = qs[:50]
+    # min_gap, max_gap = 1, 3
 
     context = {
         "entries": entries_for_display,
-        # "entries": entries,
-        "max_gap": round(max_gap, 1) if max_gap is not None else None,
-        "min_gap": round(min_gap, 1) if min_gap is not None else None,
+        "max_gap": round(gap_max, 1) if gap_max is not None else None,
+        "min_gap": round(gap_min, 1) if gap_min is not None else None,
     }
 
     # If ?partial=1 → render only the log list fragment
