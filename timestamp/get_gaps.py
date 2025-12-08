@@ -7,6 +7,17 @@ from datetime import timedelta
 CONFIDENCE_INTERVAL = (5 * 60, 3 * 60 * 60)
 
 
+def seconds_as_time(seconds: int) -> str:
+    td = timedelta(seconds=seconds)
+    time_str = str(td)
+    if len(time_str.split(":")) == 2:
+        time_str = "0:" + time_str
+    total_seconds = int(td.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
 def get_gaps(entries: list[LogEntry]) -> tuple[int, int]:
     min_gap, max_gap = 200000000, -1
     prev_entry: LogEntry or None = None
