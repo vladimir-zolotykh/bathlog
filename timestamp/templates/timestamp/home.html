@@ -58,15 +58,15 @@
         <strong>Current gaps (based on last 50 entries)</strong><br><br>
         <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
             <div style="text-align: center; margin: 10px;">
-                <div style="font-size: 2.4rem; font-weight: bold; color: #d32f2f;">{{ max_gap|floatformat:1 }}</div>
-                <div style="color: #555;">secs<br><em>Longest gap</em></div>
+                <div style="font-size: 2.4rem; font-weight: bold; color: #d32f2f;">{{ max_gap }}</div>
+                <div style="color: #555;">HH:MM:SS<br><em>Longest gap</em></div>
             </div>
             <div style="text-align: center; margin: 10px;">
-                <div style="font-size: 2.4rem; font-weight: bold; color: #388e3c;">{{ min_gap|floatformat:1 }}</div>
-                <div style="color: #555;">secs<br><em>Shortest gap</em></div>
+                <div style="font-size: 2.4rem; font-weight: bold; color: #388e3c;">{{ min_gap }}</div>
+                <div style="color: #555;">HH:MM:SS<br><em>Shortest gap</em></div>
             </div>
         </div>
-    </div>
+        </div>
     
     <div id="log-container" class="log"> 
         <h2>Recent activity</h2>

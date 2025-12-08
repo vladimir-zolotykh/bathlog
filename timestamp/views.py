@@ -7,7 +7,7 @@ from django.db.models import F, FloatField, Window, DurationField  # noqa F401
 from django.db.models.expressions import RawSQL, ExpressionWrapper  # noqa F401
 from django.db.models.functions import Lag, Lead  # noqa F401
 
-from .get_gaps import get_gaps
+from .get_gaps import get_gaps, seconds_as_time
 
 from .models import LogEntry
 
@@ -19,8 +19,10 @@ def log_list(request):
     gap_min, gap_max = get_gaps(entries)
     context = {
         "entries": entries[:50],
-        "max_gap": round(gap_max, 1) if gap_max is not None else None,
-        "min_gap": round(gap_min, 1) if gap_min is not None else None,
+        "max_gap": seconds_as_time(gap_max),
+        "min_gap": seconds_as_time(gap_min),
+        # "max_gap": round(gap_max, 1) if gap_max is not None else None,
+        # "min_gap": round(gap_min, 1) if gap_min is not None else None,
     }
 
     # If ?partial=1 → render only the log list fragment
