@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from django.db.models.functions import TruncDate
-from django.db.models import Count
 from django.db.models import F, Window, ExpressionWrapper, FloatField, Avg, Min, Max
 from django.db.models.functions import Lag
+from django.db.models.query import QuerySet
 from datetime import timedelta
 
-from .models import LogEntry
 
 CONFIDENCE_INTERVAL = (5 * 60, 4 * 60 * 60)
 
 
-def get_gaps() -> tuple[int, int]:
+def get_gaps(entries: QuerySet) -> tuple[float | None, float | None]:
+    if not entries.exists():
+        return None, None
     avg_gap_seconds = (
-        LogEntry.objects.filter(action="pee")
+        entries.filter(action="pee")
         .order_by("timestamp")
         .annotate(
             prev_timestamp=Window(

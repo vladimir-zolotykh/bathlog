@@ -16,7 +16,7 @@ def log_list(request):
     """Handles displaying the log entries and rendering the main page."""
 
     entries = LogEntry.objects.all()
-    gap_min, gap_max = get_gaps()
+    gap_min, gap_max = get_gaps(entries)
     context = {
         "entries": entries[:50],
         "max_gap": seconds_as_time(gap_max),
