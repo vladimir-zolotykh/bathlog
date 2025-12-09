@@ -7,22 +7,20 @@ from django.db.models import F, FloatField, Window, DurationField  # noqa F401
 from django.db.models.expressions import RawSQL, ExpressionWrapper  # noqa F401
 from django.db.models.functions import Lag, Lead  # noqa F401
 
-from .get_gaps import get_gaps, seconds_as_time
-
 from .models import LogEntry
+from .get_gaps_gemini import get_gaps
+from .get_gaps import seconds_as_time
 
 
 def log_list(request):
     """Handles displaying the log entries and rendering the main page."""
 
     entries = LogEntry.objects.all()
-    gap_min, gap_max = get_gaps(entries)
+    gap_min, gap_max = get_gaps()
     context = {
         "entries": entries[:50],
         "max_gap": seconds_as_time(gap_max),
         "min_gap": seconds_as_time(gap_min),
-        # "max_gap": round(gap_max, 1) if gap_max is not None else None,
-        # "min_gap": round(gap_min, 1) if gap_min is not None else None,
     }
 
     # If ?partial=1 → render only the log list fragment

@@ -9,10 +9,10 @@ from datetime import timedelta
 
 from .models import LogEntry
 
-CONFIDENCE_INTERVAL = (5 * 60, 3 * 60 * 60)
+CONFIDENCE_INTERVAL = (5 * 60, 4 * 60 * 60)
 
 
-def get_gaps(entries: list[LogEntry]) -> tuple[int, int]:
+def get_gaps() -> tuple[int, int]:
     avg_gap_seconds = (
         LogEntry.objects.filter(action="pee")
         .order_by("timestamp")
