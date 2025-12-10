@@ -8,19 +8,21 @@ from django.db.models.expressions import RawSQL, ExpressionWrapper  # noqa F401
 from django.db.models.functions import Lag, Lead  # noqa F401
 
 from .models import LogEntry
-from .get_gaps_gemini import get_gaps
-from .get_gaps import seconds_as_time
+
+# from .get_gaps_gemini import get_gaps
+# from .get_gaps import seconds_as_time
+from .get_daily_counts import get_daily_counts
 
 
 def log_list(request):
     """Handles displaying the log entries and rendering the main page."""
 
     entries = LogEntry.objects.all()
-    gap_min, gap_max = get_gaps(entries)
+    count_today, count_yesterday = get_daily_counts(entries)
     context = {
         "entries": entries[:50],
-        "max_gap": seconds_as_time(gap_max),
-        "min_gap": seconds_as_time(gap_min),
+        "max_gap": str(count_today),
+        "min_gap": str(count_yesterday),
     }
 
     # If ?partial=1 → render only the log list fragment
