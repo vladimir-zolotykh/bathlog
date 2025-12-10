@@ -1,23 +1,21 @@
 {# timestamp/templates/timestamp/log_partial.html #}
-{# timestamp/templates/timestamp/log_partial.html #}
-
-<h2>Recent activity (last 50)</h2>
-
-<!-- Gap statistics – shown both in full page and in partial reload -->
-{% if max_gap is not None and min_gap is not None %}
-<div style="margin: 20px auto; padding: 16px; background: #fff8e1; border-radius: 12px; font-size: 1.1rem;">
-    <strong>Gaps between entries</strong><br>
-    Longest: <strong style="color: #d32f2f;">{{ max_gap|floatformat:1 }} h</strong> 
-    Shortest: <strong style="color: #388e3c;">{{ min_gap|floatformat:1 }} h</strong>
-</div>
-{% endif %}
 
 {% for entry in entries %}
-    <div class="entry {% if entry.action == 'pee' %}pee-entry{% else %}pill-entry{% endif %}">
-        {{ entry.timestamp|date:"M d, H:i" }}  <!-- nicer date format -->
+    <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 10px;
+        margin-top: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        font-size: 1rem;
+        {% if entry.action == 'pee' %}color: #b8860b;{% else %}color: #2e7d32;{% endif %}
+    ">
+        <span>{{ entry.timestamp|date:"M d, H:i" }}</span>
         <strong>{% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}</strong>
-        <button onclick="removeLog({{ entry.pk }})" class="action-button">Remove</button>
+        <button onclick="removeLog({{ entry.pk }})">Remove</button>
     </div>
 {% empty %}
-    <p>No entries yet. Go ahead!</p>
+    <p>No logs. Tap a button!</p>
 {% endfor %}
