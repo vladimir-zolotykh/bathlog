@@ -9,10 +9,16 @@ class LogEntryAdmin(admin.ModelAdmin):
         "action",
         "timestamp_local",
         "timestamp",
-    )  # local first, UTC second if you want both
+        "short_note_admin",
+    )
+    fields = ("action", "timestamp", "note")
     list_filter = ("action",)
-    search_fields = ("action",)
-    readonly_fields = ("timestamp", "timestamp_local")  # optional but recommended
+    search_fields = ("action", "note")
+    readonly_fields = ("timestamp", "timestamp_local")
+
+    def short_note_admin(self, obj):
+        # Calls the short_note method defined on the LogEntry model
+        return obj.short_note()
 
     # If you want to keep the original timestamp column sortable in local time too:
     def get_ordering(self, request):
