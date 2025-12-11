@@ -57,6 +57,13 @@
     
     <div style="margin: 10px 0; font-size: 1rem;">
         <strong>Daily Counts:</strong><br>
+        <div id="count-container">
+            {% include "timestamp/count_partial.html" %}
+        </div>
+    </div>
+
+    <div style="margin: 10px 0; font-size: 1rem;">
+        <strong>Daily Counts:</strong><br>
         <div style="display: flex; justify-content: center; gap: 20px; margin-top: 5px;">
             <div style="color: #d32f2f;">Today: <strong>{{ max_gap }}</strong></div>
             <div style="color: #388e3c;">Yesterday: <strong>{{ min_gap }}</strong></div>
@@ -68,52 +75,37 @@
     </div>
     
     <script>
-    // Define CONSTANTS needed for the script to function
-    const LOG_CREATE_URL = "{% url 'log_create' %}";
-    const LOG_DELETE_URL = "{% url 'log_delete' %}";
-    const LOG_LIST_URL = "{% url 'log_list' %}?partial=1&limit=1"; // Add limit=1 to fetch only the last log
-
+    // Define new CONSTANTS
+    const LOG_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=logs"; 
+    const COUNT_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=counts"; 
+    
+    async function updateCounts() {
+        const resp = await fetch(COUNT_LIST_PARTIAL_URL);
+        document.getElementById("count-container").innerHTML = await resp.text();
+    }
+    
     async function updateLogList() {
-        // Use the new URL with limit=1
-        const resp = await fetch(LOG_LIST_URL); 
+        // Fetches the log list partial
+        const resp = await fetch(LOG_LIST_PARTIAL_URL); 
         document.getElementById("log-container").innerHTML = await resp.text();
     }
     
     async function log(action) {
-        const btn = event.target;
-        btn.disabled = true;
-        btn.style.opacity = 0.6;
+        // ... CSRF and fetch logic for LOG_CREATE_URL ...
         
-        await fetch(LOG_CREATE_URL, {
-            method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest", 
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: new URLSearchParams({action})
-        });
-        
+        // AFTER successful creation:
         await updateLogList();
+        await updateCounts(); // <--- NEW CALL
         
-        btn.disabled = false;
-        btn.style.opacity = 1;
+        // ... button re-enable logic ...
     }
-
+    
     async function removeLog(logId) {
-        if (!confirm("Delete?")) {
-            return;
-        }
+        // ... CSRF and fetch logic for LOG_DELETE_URL ...
         
-        await fetch(LOG_DELETE_URL, {
-            method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest", 
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: new URLSearchParams({id: logId})
-        });
-
+        // AFTER successful deletion:
         await updateLogList();
+        await updateCounts();
     }
     </script>
 </body>

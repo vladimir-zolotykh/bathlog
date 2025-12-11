@@ -15,8 +15,6 @@ from .get_daily_counts import get_daily_counts
 
 
 def log_list(request):
-    """Handles displaying the log entries and rendering the main page."""
-
     entries = LogEntry.objects.all()
     count_today, count_yesterday = get_daily_counts(entries)
     context = {
@@ -24,11 +22,11 @@ def log_list(request):
         "max_gap": str(count_today),
         "min_gap": str(count_yesterday),
     }
-
-    # If ?partial=1 → render only the log list fragment
-    if request.GET.get("partial"):
+    if request.GET.get("partial") == "counts":
+        return render(request, "timestamp/count_partial.html", context)
+    if request.GET.get("partial") == "logs":
+        # Rename the log list partial flag to 'logs' for clarity
         return render(request, "timestamp/log_partial.html", context)
-    # Default case: Render the full home page
     return render(request, "timestamp/home.html", context)
 
 
