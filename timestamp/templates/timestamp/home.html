@@ -62,48 +62,72 @@
         </div>
     </div>
 
-    <div style="margin: 10px 0; font-size: 1rem;">
-        <strong>Daily Counts:</strong><br>
-        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 5px;">
-            <div style="color: #d32f2f;">Today: <strong>{{ max_gap }}</strong></div>
-            <div style="color: #388e3c;">Yesterday: <strong>{{ min_gap }}</strong></div>
-        </div>
-    </div>
-    
     <div id="log-container" class="log-entry-container">
         {% include "timestamp/log_partial.html" %}
     </div>
     
-    <script>
-    // Define new CONSTANTS
+<script>
+    // Define CONSTANTS needed for the script to function
+    // 1. URLs for POST requests (MISSING)
+    const LOG_CREATE_URL = "{% url 'log_create' %}";
+    const LOG_DELETE_URL = "{% url 'log_delete' %}";
+    
+    // 2. URLs for GET partial requests (Already present)
     const LOG_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=logs"; 
     const COUNT_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=counts"; 
     
+    // --- UPDATE FUNCTIONS (Correctly Implemented) ---
     async function updateCounts() {
         const resp = await fetch(COUNT_LIST_PARTIAL_URL);
         document.getElementById("count-container").innerHTML = await resp.text();
     }
     
     async function updateLogList() {
-        // Fetches the log list partial
         const resp = await fetch(LOG_LIST_PARTIAL_URL); 
         document.getElementById("log-container").innerHTML = await resp.text();
     }
     
+    // --- LOG (Pee/Pill) FUNCTION (CORE LOGIC RESTORED) ---
     async function log(action) {
-        // ... CSRF and fetch logic for LOG_CREATE_URL ...
+        const btn = event.target; // Get the button that was clicked
+        btn.disabled = true;
+        btn.style.opacity = 0.6;
         
-        // AFTER successful creation:
+        // Perform the POST request to create the new log entry
+        await fetch(LOG_CREATE_URL, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest", 
+                "X-CSRFToken": "{{ csrf_token }}" // CSRF token is essential for Django POST
+            },
+            body: new URLSearchParams({action})
+        });
+        
+        // AFTER successful creation: Update both sections
         await updateLogList();
-        await updateCounts(); // <--- NEW CALL
+        await updateCounts();
         
-        // ... button re-enable logic ...
+        // Re-enable the button
+        btn.disabled = false;
+        btn.style.opacity = 1;
     }
     
+    // --- DELETE FUNCTION (CORE LOGIC RESTORED) ---
     async function removeLog(logId) {
-        // ... CSRF and fetch logic for LOG_DELETE_URL ...
+        if (!confirm("Delete?")) {
+            return;
+        }
         
-        // AFTER successful deletion:
+        await fetch(LOG_DELETE_URL, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest", 
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({id: logId})
+        });
+
+        // AFTER successful deletion: Update both sections
         await updateLogList();
         await updateCounts();
     }
