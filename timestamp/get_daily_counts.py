@@ -9,7 +9,8 @@ from datetime import timedelta
 
 def get_daily_counts(entries: QuerySet) -> tuple[int | None, int | None]:
     now = timezone.now()
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    local_now = timezone.localtime(now)
+    today_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_start = today_start - timedelta(days=1)
     daily_counts = (
         entries.filter(action="pee")
