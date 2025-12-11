@@ -12,13 +12,18 @@ from .models import LogEntry
 # from .get_gaps_gemini import get_gaps
 # from .get_gaps import seconds_as_time
 from .get_daily_counts import get_daily_counts
+from .average_gap_today import get_average_gap_today
+from .get_gaps import seconds_as_time
 
 
 def log_list(request):
     entries = LogEntry.objects.all()
     count_today, count_yesterday = get_daily_counts(entries)
+    average_gap_today = get_average_gap_today(entries)
+    _gap = ":".join(seconds_as_time(int(average_gap_today)).split(":")[:2])
     context = {
         "entries": entries[:50],
+        "average_gap_today": _gap,
         "max_gap": str(count_today),
         "min_gap": str(count_yesterday),
     }

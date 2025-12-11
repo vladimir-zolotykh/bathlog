@@ -9,7 +9,7 @@ from django.db.models.expressions import ExpressionWrapper
 from django.utils import timezone
 
 
-def get_average_pee_gap_today(entries: QuerySet) -> float | None:
+def get_average_gap_today(entries: QuerySet) -> float | None:
     """
     Calculates the average time gap (in seconds) between adjoining 'pee' logs recorded today.
     """
