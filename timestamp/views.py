@@ -20,7 +20,10 @@ def log_list(request):
     entries = LogEntry.objects.all()
     count_today, count_yesterday = get_daily_counts(entries)
     average_gap_today = get_average_gap_today(entries)
-    _gap = ":".join(seconds_as_time(int(average_gap_today)).split(":")[:2])
+    try:
+        _gap = ":".join(seconds_as_time(int(average_gap_today)).split(":")[:2])
+    except TypeError:
+        _gap = ""
     context = {
         "entries": entries[:50],
         "average_gap_today": _gap,
