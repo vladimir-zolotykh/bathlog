@@ -4,6 +4,13 @@ from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 
 
+class Note(models.Model):
+    text = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.text
+
+
 class LogEntry(models.Model):
     ACTION_CHOICES = [
         ("pee", "Pee"),
@@ -12,7 +19,14 @@ class LogEntry(models.Model):
 
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(default=timezone.now)
-    note = models.TextField(_("Note"), blank=True, null=True)
+    short_note_object = models.ForeignKey(
+        Note,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="log_entries",
+    )
+    # note = models.TextField(_("Note"), blank=True, null=True)
 
     def __str__(self):
         return f"{self.action} @ {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
