@@ -1,70 +1,82 @@
 # timestamp/views.py
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_POST
-from django.db.models import F, FloatField, Window, DurationField  # noqa F401
-from django.db.models.expressions import RawSQL, ExpressionWrapper  # noqa F401
-from django.db.models.functions import Lag, Lead  # noqa F401
+from django.views.generic import ListView, CreateView, DeleteView
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 
 from .models import LogEntry
-
-# from .get_gaps_gemini import get_gaps
-# from .get_gaps import seconds_as_time
 from .get_daily_counts import get_daily_counts
 from .average_gap_today import get_average_gap_today
 from .get_gaps import seconds_as_time
 
 
-def log_list(request):
-    entries = LogEntry.objects.all()
-    count_today, count_yesterday = get_daily_counts(entries)
-    average_gap_today = get_average_gap_today(entries)
-    try:
-        _gap = ":".join(seconds_as_time(int(average_gap_today)).split(":")[:2])
-    except TypeError:
-        _gap = ""
-    context = {
-        "entries": entries[:50],
-        "average_gap_today": _gap,
-        "max_gap": str(count_today),
-        "min_gap": str(count_yesterday),
-    }
-    if request.GET.get("partial") == "counts":
-        return render(request, "timestamp/count_partial.html", context)
-    if request.GET.get("partial") == "logs":
-        # Rename the log list partial flag to 'logs' for clarity
-        return render(request, "timestamp/log_partial.html", context)
-    return render(request, "timestamp/home.html", context)
+class LogListView(ListView):
+    model = LogEntry
+    template_name = "timestamp/home.html"
+    context_object_name = "entries"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return LogEntry.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        all_entries = self.get_queryset()
+        count_today, count_yesterday = get_daily_counts(all_entries)
+        average_gap_today = get_average_gap_today(all_entries)
+
+        try:
+            _gap = ":".join(seconds_as_time(int(average_gap_today)).split(":")[:2])
+        except (TypeError, ValueError):
+            _gap = ""
+
+        context["average_gap_today"] = _gap
+        context["max_gap"] = str(count_today)
+        context["min_gap"] = str(count_yesterday)
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        if request.GET.get("partial") == "counts":
+            self.template_name = "timestamp/count_partial.html"
+            return super().get(request, *args, **kwargs)
+        if request.GET.get("partial") == "logs":
+            self.template_name = "timestamp/log_partial.html"
+            return super().get(request, *args, **kwargs)
+        self.template_name = "timestamp/home.html"
+        return super().get(request, *args, **kwargs)
 
 
-@require_POST
-def log_create(request):
-    """Handles creation of a new LogEntry via POST request."""
-    action = request.POST.get("action")
-    if action in ["pee", "pill"]:
-        LogEntry.objects.create(action=action)
+class LogCreateView(CreateView):
+    model = LogEntry
+    fields = ["action"]
 
-    # Standard AJAX/Redirect Response Logic
-    # Redirect if it's a standard browser POST (full page refresh)
-    # Return empty success if it's an AJAX request (no full page refresh)
-    return (
-        redirect("log_list")  # Redirect to the new GET view name
-        if not request.headers.get("X-Requested-With")
-        else HttpResponse("")
-    )
+    success_url = reverse_lazy("log_list")
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponseBadRequest("GET not allowed for creation.")
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get("action")
+        if action in ["pee", "pill"]:
+            LogEntry.objects.create(action=action)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return HttpResponse("")
+        else:
+            return HttpResponseRedirect(self.get_success_url())
 
 
-@require_POST
-def log_delete(request):
-    """Handles deletion of a LogEntry via POST request (simulating a DELETE)."""
+class LogDeleteView(DeleteView):
+    model = LogEntry
+    success_url = reverse_lazy("log_list")
 
-    log_id = request.POST.get("id")
-    if not log_id:
-        return HttpResponseBadRequest("Missing log ID.")
-    try:
-        entry = get_object_or_404(LogEntry, pk=log_id)
-        entry.delete()
-    except Exception as e:
-        return HttpResponseBadRequest(f"Error deleting entry: {e}")
-    return HttpResponse("")
+    def post(self, request, *args, **kwargs):
+        log_id = request.POST.get("id")
+        if not log_id:
+            return HttpResponseBadRequest("Missing log ID.")
+        try:
+            entry = get_object_or_404(self.model, pk=log_id)
+            entry.delete()
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error deleting entry: {e}")
+        return HttpResponse("")
