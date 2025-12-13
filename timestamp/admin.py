@@ -1,6 +1,11 @@
 # admin.py
 from django.contrib import admin
-from .models import LogEntry
+from .models import LogEntry, Note
+
+
+@admin.register(Note)
+class NoteAdmin(admin.ModelAdmin):
+    search_fields = ["text"]
 
 
 @admin.register(LogEntry)
@@ -9,19 +14,17 @@ class LogEntryAdmin(admin.ModelAdmin):
         "action",
         "timestamp_local",
         "timestamp",
-        "short_note_admin",
+        "short_note_object",
     )
-    fields = ("action", "timestamp", "note")
-    list_filter = ("action",)
-    search_fields = ("action", "note")
+    autocomplete_fields = ["short_note_object"]
+    fields = ("action", "short_note_object")
+    list_filter = ("action", "short_note_object")
+    search_fields = ("action", "short_note_object")
     readonly_fields = ("timestamp", "timestamp_local")
 
-    def short_note_admin(self, obj):
-        # Calls the short_note method defined on the LogEntry model
-        return obj.short_note()
+    # def short_note_admin(self, obj):
+    #     # Calls the short_note method defined on the LogEntry model
+    #     return obj.short_note()
 
-    # If you want to keep the original timestamp column sortable in local time too:
     def get_ordering(self, request):
-        return [
-            "-timestamp"
-        ]  # still sorts correctly because we ordered by timestamp in Meta
+        return ["-timestamp"]

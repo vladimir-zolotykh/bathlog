@@ -14,10 +14,13 @@
     ">
         <span>{{ entry.timestamp|date:"M d, H:i" }}</span>
         <strong>{% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}</strong>
-        {% if entry.note %}
-            <span class="log-note">{{ entry.short_note }}</span> 
+        {# Access the Note object and its 'text' field #}
+        {% if entry.short_note_object %}
+            <span class="note-text">
+                 &nbsp; {{ entry.short_note_object.text }}
+            </span>
         {% endif %}
-        <button onclick="removeLog({{ entry.pk }})">Remove</button>
+        <button onclick="removeLog({{ entry.pk }})">Del</button>
     </div>
 {% empty %}
     <p>No logs. Tap a button!</p>
