@@ -26,20 +26,9 @@ class LogEntry(models.Model):
         blank=True,
         related_name="log_entries",
     )
-    # note = models.TextField(_("Note"), blank=True, null=True)
 
     def __str__(self):
         return f"{self.action} @ {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
-
-    def short_note(self, max_length=20):
-        """Returns the note, truncated to max_length with ellipses."""
-        if not self.note:
-            return ""
-
-        if len(self.note) > max_length:
-            return f"{self.note[:max_length]}..."
-
-        return self.note
 
     class Meta:
         ordering = ["-timestamp"]
