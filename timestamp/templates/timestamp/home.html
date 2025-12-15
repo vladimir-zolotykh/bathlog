@@ -2,218 +2,286 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P&P Logger</title>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>P&amp;P Logger</title>
+
+    <!-- Select2 CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+        rel="stylesheet"
+    >
+
     <style>
-        /* Minimal layout to ensure core elements fit without scrolling */
-        body { 
-            font-family: sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 10px; 
-            /* Use Flexbox to stack content and prevent overflow/scroll */
+        /* Base layout */
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        
-        /* Minimalist Button Styling */
+
+        /* Buttons */
         .btn-group button {
-            font-size: 1.5rem; /* Smaller buttons */
+            font-size: 1.5rem;
             padding: 15px 30px;
             margin: 5px;
+
             border: 1px solid #ccc;
             border-radius: 5px;
             cursor: pointer;
         }
-        .pee { background: #ffeb3b; } /* yellow */
-        .pill { background: #4caf50; color: white; } /* green */
 
-        /* Minimalist Log Entry Styling */
-        .log-entry-container { 
-            width: 100%; 
-            max-width: 400px; 
+        .pee {
+            background: #ffeb3b;
         }
-        
-        /* Style for buttons inside log entries (must be small) */
+
+        .pill {
+            background: #4caf50;
+            color: white;
+        }
+
+        /* Log entries */
+        .log-entry-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
         .log-entry-container button {
             font-size: 0.7rem;
             padding: 1px 3px;
             margin-left: 5px;
+
             border-radius: 3px;
             background: #f44336;
             color: white;
         }
     </style>
 </head>
-<body>
-    
-    <h2>Pee & Pill Logger</h2>
 
+<body>
+
+    <h2>Pee &amp; Pill Logger</h2>
+
+    <!-- Main buttons -->
     <div class="btn-group">
-        <button onclick="log('pee')" class="pee">Pee</button>
-        <button onclick="log('pill')" class="pill">Pill</button>
-        <button onclick="document.getElementById('pill-form-container').style.display='block'; this.style.display='none';" class="pill">Pill with Note</button>
+        <button
+            class="pee"
+            onclick="log('pee')"
+        >
+            Pee
+        </button>
+
+        <button
+            class="pill"
+            onclick="log('pill')"
+        >
+            Pill
+        </button>
+
+        <button
+            class="pill"
+            onclick="
+                document.getElementById('pill-form-container').style.display = 'block';
+                this.style.display = 'none';
+            "
+        >
+            Pill with Note
+        </button>
     </div>
-    <div id="pill-form-container" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 300px;">
+
+    <!-- Pill with note form -->
+    <div
+        id="pill-form-container"
+        style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+        "
+    >
         <h3>Log Pill with Note</h3>
-        <select id="note-selector" style="width: 100%;">
-            {# Options will be dynamically loaded here by Select2 #}
+
+        <select
+            id="note-selector"
+            style="width: 100%;"
+        >
+            {# Options loaded dynamically by Select2 #}
         </select>
-        <button onclick="logPillWithNote()" style="margin-top: 10px;" class="pill">Log Pill</button>
-        <button onclick="document.getElementById('pill-form-container').style.display='none'; document.querySelector('.btn-group .pill').style.display='inline-block';" type="button">Cancel</button>
+
+        <button
+            class="pill"
+            style="margin-top: 10px;"
+            onclick="logPillWithNote()"
+        >
+            Log Pill
+        </button>
+
+        <button
+            type="button"
+            onclick="
+                document.getElementById('pill-form-container').style.display = 'none';
+                document.querySelector('.btn-group .pill').style.display = 'inline-block';
+            "
+        >
+            Cancel
+        </button>
     </div>
-    
-    <div style="margin: 10px 0; font-size: 1rem;">
+
+    <!-- Daily counts -->
+    <div
+        style="
+            margin: 10px 0;
+            font-size: 1rem;
+        "
+    >
         <strong>Daily Counts:</strong><br>
+
         <div id="count-container">
             {% include "timestamp/count_partial.html" %}
         </div>
     </div>
-    
-    <div id="log-container" class="log-entry-container">
+
+    <!-- Log list -->
+    <div
+        id="log-container"
+        class="log-entry-container"
+    >
         {% include "timestamp/log_partial.html" %}
     </div>
-    {# 2. Include jQuery (Select2 often requires it) and Select2 JS at the end #}
+
+    <!-- JS dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    
-<script>
-    // Define CONSTANTS needed for the script to function
-    // 1. URLs for POST requests (MISSING)
-    const LOG_CREATE_URL = "{% url 'log_create' %}";
-    const LOG_DELETE_URL = "{% url 'log_delete' %}";
-    
-    // 2. URLs for GET partial requests (Already present)
-    const LOG_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=logs"; 
-    const COUNT_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=counts"; 
-    // ... existing constants ...
-const NOTE_AUTOCOMPLETE_URL = "{% url 'note_autocomplete_json' %}"; 
-// ... existing update functions ...
 
-// --- INITIALIZE SELECT2 (The Combo Box) ---
-$(document).ready(function() {
-    $('#note-selector').select2({
-        placeholder: "Select or search for a note...",
-        allowClear: true,
-        // The AJAX option is key to loading notes dynamically
-        ajax: {
-            url: NOTE_AUTOCOMPLETE_URL,
-            dataType: 'json',
-            delay: 250,
-            processResults: function (data) {
-                // Map the JSON data (id, text) into Select2 format (id, text)
-                return {
-                    results: data.map(item => ({
-                        id: item.id,
-                        text: item.text
-                    }))
-                };
-            },
-            cache: true
-        },
-        // Enable creating new notes (optional advanced feature)
-        tags: true 
-    });
-});
+    <script>
+        /* --- URL CONSTANTS --- */
+        const LOG_CREATE_URL = "{% url 'log_create' %}";
+        const LOG_DELETE_URL = "{% url 'log_delete' %}";
 
-// --- NEW LOGGING FUNCTION ---
-async function logPillWithNote() {
-    const selectedNoteId = $('#note-selector').val(); // Get the selected ID
-    const selectedNoteText = $('#note-selector').find(':selected').text(); // Get the selected text
+        const LOG_LIST_PARTIAL_URL =
+            "{% url 'log_list' %}?partial=logs";
 
-    // 1. If it's a new note (because of tags: true), we need to create the Note object first.
-    //    This requires more complex backend logic (a custom endpoint to create a Note).
-    //    For simplicity, we assume the user selected an existing Note ID.
-    
-    if (!selectedNoteId) {
-        alert("Please select a note or type a new one.");
-        return;
-    }
-    
-    // 2. Perform the POST request to create the new log entry
-    //    NOTE: Your current LOG_CREATE_URL endpoint only accepts 'action'. 
-    //    You must UPDATE your LogCreateView to accept 'note_id' as well.
+        const COUNT_LIST_PARTIAL_URL =
+            "{% url 'log_list' %}?partial=counts";
 
-    await fetch(LOG_CREATE_URL, {
-        method: "POST",
-        headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: new URLSearchParams({
-            action: 'pill',
-            note_id: selectedNoteId // Pass the ID of the selected note
-        })
-    });
-    
-    // 3. Update the UI
-    await updateLogList();
-    await updateCounts();
-    
-    // 4. Reset the form and show the button again
-    $('#note-selector').val(null).trigger('change'); 
-    document.getElementById('pill-form-container').style.display = 'none';
-    document.querySelector('.btn-group .pill').style.display = 'inline-block';
-}
+        const NOTE_AUTOCOMPLETE_URL =
+            "{% url 'note_autocomplete_json' %}";
 
-// ... rest of the existing script (log and removeLog) ...
-    // --- UPDATE FUNCTIONS (Correctly Implemented) ---
-    async function updateCounts() {
-        const resp = await fetch(COUNT_LIST_PARTIAL_URL);
-        document.getElementById("count-container").innerHTML = await resp.text();
-    }
-    
-    async function updateLogList() {
-        const resp = await fetch(LOG_LIST_PARTIAL_URL); 
-        document.getElementById("log-container").innerHTML = await resp.text();
-    }
-    
-    // --- LOG (Pee/Pill) FUNCTION (CORE LOGIC RESTORED) ---
-    async function log(action) {
-        const btn = event.target; // Get the button that was clicked
-        btn.disabled = true;
-        btn.style.opacity = 0.6;
-        
-        // Perform the POST request to create the new log entry
-        await fetch(LOG_CREATE_URL, {
-            method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest", 
-                "X-CSRFToken": "{{ csrf_token }}" // CSRF token is essential for Django POST
-            },
-            body: new URLSearchParams({action})
+        /* --- SELECT2 INITIALIZATION --- */
+        $(document).ready(function () {
+            $('#note-selector').select2({
+                placeholder: "Select or search for a note...",
+                allowClear: true,
+                tags: true,
+                ajax: {
+                    url: NOTE_AUTOCOMPLETE_URL,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.id,
+                                text: item.text
+                            }))
+                        };
+                    },
+                    cache: true
+                }
+            });
         });
-        
-        // AFTER successful creation: Update both sections
-        await updateLogList();
-        await updateCounts();
-        
-        // Re-enable the button
-        btn.disabled = false;
-        btn.style.opacity = 1;
-    }
-    
-    // --- DELETE FUNCTION (CORE LOGIC RESTORED) ---
-    async function removeLog(logId) {
-        if (!confirm("Delete?")) {
-            return;
+
+        /* --- UPDATE FUNCTIONS --- */
+        async function updateCounts() {
+            const resp = await fetch(COUNT_LIST_PARTIAL_URL);
+            document.getElementById('count-container').innerHTML =
+                await resp.text();
         }
-        
-        await fetch(LOG_DELETE_URL, {
-            method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest", 
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: new URLSearchParams({id: logId})
-        });
 
-        // AFTER successful deletion: Update both sections
-        await updateLogList();
-        await updateCounts();
-    }
+        async function updateLogList() {
+            const resp = await fetch(LOG_LIST_PARTIAL_URL);
+            document.getElementById('log-container').innerHTML =
+                await resp.text();
+        }
+
+        /* --- CORE LOGGING --- */
+        async function log(action) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.style.opacity = 0.6;
+
+            await fetch(LOG_CREATE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({ action })
+            });
+
+            await updateLogList();
+            await updateCounts();
+
+            btn.disabled = false;
+            btn.style.opacity = 1;
+        }
+
+        /* --- PILL WITH NOTE --- */
+        async function logPillWithNote() {
+            const noteId = $('#note-selector').val();
+
+            if (!noteId) {
+                alert('Please select a note.');
+                return;
+            }
+
+            await fetch(LOG_CREATE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    action: 'pill',
+                    note_id: noteId
+                })
+            });
+
+            await updateLogList();
+            await updateCounts();
+
+            $('#note-selector').val(null).trigger('change');
+            document.getElementById('pill-form-container').style.display = 'none';
+            document.querySelector('.btn-group .pill').style.display = 'inline-block';
+        }
+
+        /* --- DELETE --- */
+        async function removeLog(logId) {
+            if (!confirm('Delete?')) {
+                return;
+            }
+
+            await fetch(LOG_DELETE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({ id: logId })
+            });
+
+            await updateLogList();
+            await updateCounts();
+        }
     </script>
+
 </body>
 </html>
