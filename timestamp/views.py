@@ -3,11 +3,29 @@ from django.views.generic import ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.http import JsonResponse
+from django.views import View
 
 from .models import LogEntry
+from .models import Note
 from .get_daily_counts import get_daily_counts
 from .average_gap_today import get_average_gap_today
 from .get_gaps import seconds_as_time
+
+
+class NoteAutocompleteView(View):
+    """Returns a list of Note objects as JSON for use in an autocomplete field."""
+
+    def get(self, request, *args, **kwargs):
+        # Optional: Get a search term if needed, though simple selection might be enough
+        # q = request.GET.get('q', '')
+
+        notes = Note.objects.values("id", "text").order_by("text")
+
+        # Convert queryset values into a list of dictionaries
+        data = list(notes)
+
+        return JsonResponse(data, safe=False)
 
 
 class LogListView(ListView):
@@ -48,18 +66,29 @@ class LogListView(ListView):
 
 
 class LogCreateView(CreateView):
-    model = LogEntry
-    fields = ["action"]
-
-    success_url = reverse_lazy("log_list")
-
-    def get(self, request, *args, **kwargs):
-        return HttpResponseBadRequest("GET not allowed for creation.")
+    # ... existing class attributes ...
 
     def post(self, request, *args, **kwargs):
         action = request.POST.get("action")
+        note_id = request.POST.get("note_id")  # <--- Get the new ID
+
+        # 1. Start with the creation data
+        creation_kwargs = {"action": action}
+
+        if note_id:
+            try:
+                # Check if the Note object exists
+                note_instance = Note.objects.get(pk=note_id)
+                creation_kwargs["short_note_object"] = note_instance
+            except Note.DoesNotExist:
+                # If the note ID is invalid, log or handle error
+                pass
+
         if action in ["pee", "pill"]:
-            LogEntry.objects.create(action=action)
+            # Use the kwargs to create the entry
+            LogEntry.objects.create(**creation_kwargs)
+
+        # Standard AJAX/Redirect Response Logic
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return HttpResponse("")
         else:

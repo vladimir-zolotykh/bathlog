@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P&P Logger</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         /* Minimal layout to ensure core elements fit without scrolling */
         body { 
@@ -53,6 +54,15 @@
     <div class="btn-group">
         <button onclick="log('pee')" class="pee">Pee</button>
         <button onclick="log('pill')" class="pill">Pill</button>
+        <button onclick="document.getElementById('pill-form-container').style.display='block'; this.style.display='none';" class="pill">Pill with Note</button>
+    </div>
+    <div id="pill-form-container" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 300px;">
+        <h3>Log Pill with Note</h3>
+        <select id="note-selector" style="width: 100%;">
+            {# Options will be dynamically loaded here by Select2 #}
+        </select>
+        <button onclick="logPillWithNote()" style="margin-top: 10px;" class="pill">Log Pill</button>
+        <button onclick="document.getElementById('pill-form-container').style.display='none'; document.querySelector('.btn-group .pill').style.display='inline-block';" type="button">Cancel</button>
     </div>
     
     <div style="margin: 10px 0; font-size: 1rem;">
@@ -61,10 +71,13 @@
             {% include "timestamp/count_partial.html" %}
         </div>
     </div>
-
+    
     <div id="log-container" class="log-entry-container">
         {% include "timestamp/log_partial.html" %}
     </div>
+    {# 2. Include jQuery (Select2 often requires it) and Select2 JS at the end #}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     
 <script>
     // Define CONSTANTS needed for the script to function
@@ -75,7 +88,77 @@
     // 2. URLs for GET partial requests (Already present)
     const LOG_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=logs"; 
     const COUNT_LIST_PARTIAL_URL = "{% url 'log_list' %}?partial=counts"; 
+    // ... existing constants ...
+const NOTE_AUTOCOMPLETE_URL = "{% url 'note_autocomplete_json' %}"; 
+// ... existing update functions ...
+
+// --- INITIALIZE SELECT2 (The Combo Box) ---
+$(document).ready(function() {
+    $('#note-selector').select2({
+        placeholder: "Select or search for a note...",
+        allowClear: true,
+        // The AJAX option is key to loading notes dynamically
+        ajax: {
+            url: NOTE_AUTOCOMPLETE_URL,
+            dataType: 'json',
+            delay: 250,
+            processResults: function (data) {
+                // Map the JSON data (id, text) into Select2 format (id, text)
+                return {
+                    results: data.map(item => ({
+                        id: item.id,
+                        text: item.text
+                    }))
+                };
+            },
+            cache: true
+        },
+        // Enable creating new notes (optional advanced feature)
+        tags: true 
+    });
+});
+
+// --- NEW LOGGING FUNCTION ---
+async function logPillWithNote() {
+    const selectedNoteId = $('#note-selector').val(); // Get the selected ID
+    const selectedNoteText = $('#note-selector').find(':selected').text(); // Get the selected text
+
+    // 1. If it's a new note (because of tags: true), we need to create the Note object first.
+    //    This requires more complex backend logic (a custom endpoint to create a Note).
+    //    For simplicity, we assume the user selected an existing Note ID.
     
+    if (!selectedNoteId) {
+        alert("Please select a note or type a new one.");
+        return;
+    }
+    
+    // 2. Perform the POST request to create the new log entry
+    //    NOTE: Your current LOG_CREATE_URL endpoint only accepts 'action'. 
+    //    You must UPDATE your LogCreateView to accept 'note_id' as well.
+
+    await fetch(LOG_CREATE_URL, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: new URLSearchParams({
+            action: 'pill',
+            note_id: selectedNoteId // Pass the ID of the selected note
+        })
+    });
+    
+    // 3. Update the UI
+    await updateLogList();
+    await updateCounts();
+    
+    // 4. Reset the form and show the button again
+    $('#note-selector').val(null).trigger('change'); 
+    document.getElementById('pill-form-container').style.display = 'none';
+    document.querySelector('.btn-group .pill').style.display = 'inline-block';
+}
+
+// ... rest of the existing script (log and removeLog) ...
     // --- UPDATE FUNCTIONS (Correctly Implemented) ---
     async function updateCounts() {
         const resp = await fetch(COUNT_LIST_PARTIAL_URL);
