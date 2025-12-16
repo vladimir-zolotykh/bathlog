@@ -86,6 +86,7 @@
         </button>
 
         <button
+            id="pill-with-note-btn"
             class="pill"
             onclick="
                 document.getElementById('pill-form-container').style.display = 'block';
@@ -129,7 +130,7 @@
             type="button"
             onclick="
                 document.getElementById('pill-form-container').style.display = 'none';
-                document.querySelector('.btn-group .pill').style.display = 'inline-block';
+                document.getElementById('pill-with-note-btn').style.display = 'inline-block';
             "
         >
             Cancel
@@ -260,7 +261,7 @@
 
             $('#note-selector').val(null).trigger('change');
             document.getElementById('pill-form-container').style.display = 'none';
-            document.querySelector('.btn-group .pill').style.display = 'inline-block';
+            document.getElementById('pill-with-note-btn').style.display = 'inline-block';
         }
 
         /* --- DELETE --- */
