@@ -74,7 +74,17 @@ class LogCreateView(CreateView):
 
         # 1. Start with the creation data
         creation_kwargs = {"action": action}
+        volume_str = request.POST.get("volume")
+        volume = None
+        if volume_str:
+            try:
+                volume = int(volume_str)
+            except ValueError:
+                # Handle case where volume is provided but is not a valid integer
+                return HttpResponseBadRequest("Invalid volume value.")
 
+        if volume is not None:
+            creation_kwargs["volume"] = volume
         if note_id:
             try:
                 # Check if the Note object exists

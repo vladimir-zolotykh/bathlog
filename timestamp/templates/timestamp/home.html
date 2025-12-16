@@ -79,6 +79,18 @@
         </button>
 
         <button
+            id="pee-with-volume-btn"
+            class="pee"
+            onclick="
+                document.getElementById('pee-form-container').style.display = 'block';
+                this.style.display = 'none';
+            "
+        >
+            Pee with Volume
+        </button>
+        
+
+        <button
             class="pill"
             onclick="log('pill')"
         >
@@ -97,6 +109,46 @@
         </button>
     </div>
 
+    <div
+        id="pee-form-container"
+        style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+        "
+    >
+        <h3>Log Pee with Volume (ml)</h3>
+
+        <input
+            type="number"
+            id="volume-input"
+            placeholder="Volume (ml)"
+            style="width: 100%; padding: 5px; margin-bottom: 10px;"
+            min="1"
+        >
+
+        <button
+            class="pee"
+            style="margin-top: 10px;"
+            onclick="logPeeWithVolume()"
+        >
+            Log Pee
+        </button>
+
+        <button
+            type="button"
+            onclick="
+                document.getElementById('pee-form-container').style.display = 'none';
+                document.getElementById('pee-with-volume-btn').style.display = 'inline-block';
+                document.getElementById('volume-input').value = ''; /* Clear input on cancel */
+            "
+        >
+            Cancel
+        </button>
+    </div>
     <!-- Pill with note form -->
     <div
         id="pill-form-container"
@@ -235,6 +287,34 @@
             btn.style.opacity = 1;
         }
 
+        /* --- PEE WITH VOLUME --- */
+        async function logPeeWithVolume() {
+            const volume = document.getElementById('volume-input').value;
+
+            if (!volume || isNaN(parseInt(volume)) || parseInt(volume) <= 0) {
+                alert('Please enter a valid volume (e.g., a positive number).');
+                return;
+            }
+
+            await fetch(LOG_CREATE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    action: 'pee',
+                    volume: volume
+                })
+            });
+
+            await updateLogList();
+            await updateCounts();
+
+            document.getElementById('volume-input').value = '';
+            document.getElementById('pee-form-container').style.display = 'none';
+            document.getElementById('pee-with-volume-btn').style.display = 'inline-block';
+        }
         /* --- PILL WITH NOTE --- */
         async function logPillWithNote() {
             const noteId = $('#note-selector').val();

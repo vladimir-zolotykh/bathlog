@@ -18,6 +18,9 @@ class LogEntry(models.Model):
 
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(default=timezone.now)
+    volume = models.IntegerField(
+        null=True, blank=True, help_text="Volume for pee (optional)"
+    )
     short_note_object = models.ForeignKey(
         Note,
         on_delete=models.SET_NULL,
