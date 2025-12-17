@@ -12,12 +12,13 @@ class NoteAdmin(admin.ModelAdmin):
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = (
         "action",
+        "volume",
         "timestamp_local",
         "timestamp",
         "short_note_object",
     )
     autocomplete_fields = ["short_note_object"]
-    fields = ("action", "short_note_object")
+    fields = ("action", "volume", "short_note_object")
     list_filter = ("action", "short_note_object")
     search_fields = ("action", "short_note_object")
     readonly_fields = ("timestamp", "timestamp_local")
