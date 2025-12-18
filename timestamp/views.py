@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views import View
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware, get_current_timezone
 
 from .models import LogEntry
 from .models import Note
@@ -72,6 +74,7 @@ class LogCreateView(CreateView):
         action = request.POST.get("action")
         note_id = request.POST.get("note_id")  # <--- Get the new ID
         note_text = request.POST.get("note_text")
+        timestamp_str = request.POST.get("timestamp")
 
         # 1. Start with the creation data
         creation_kwargs = {"action": action}
@@ -83,6 +86,17 @@ class LogCreateView(CreateView):
             except ValueError:
                 # Handle case where volume is provided but is not a valid integer
                 return HttpResponseBadRequest("Invalid volume value.")
+
+        # --- TIMESTAMP OVERRIDE (OPTIONAL) ---
+        if timestamp_str:
+            dt = parse_datetime(timestamp_str)
+            if dt is None:
+                return HttpResponseBadRequest("Invalid datetime format.")
+
+            if dt.tzinfo is None:
+                dt = make_aware(dt, get_current_timezone())
+
+            creation_kwargs["timestamp"] = dt
 
         if volume is not None:
             creation_kwargs["volume"] = volume

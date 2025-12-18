@@ -79,6 +79,17 @@
         </button>
 
         <button
+            id="pee-at-time-btn"
+            class="pee"
+            onclick="
+                document.getElementById('pee-time-form-container').style.display = 'block';
+                this.style.display = 'none';
+            "
+        >
+            Pee at Time
+        </button>
+
+        <button
             id="pee-with-volume-btn"
             class="pee"
             onclick="
@@ -109,6 +120,44 @@
         </button>
     </div>
 
+    <div
+        id="pee-time-form-container"
+        style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+        "
+    >
+        <h3>Log Pee at Specific Time</h3>
+    
+        <input
+            type="datetime-local"
+            id="pee-time-input"
+            style="width: 100%; padding: 5px; margin-bottom: 10px;"
+        >
+    
+        <button
+            class="pee"
+            onclick="logPeeAtTime()"
+        >
+            Log Pee
+        </button>
+    
+        <button
+            type="button"
+            onclick="
+                document.getElementById('pee-time-form-container').style.display = 'none';
+                document.getElementById('pee-at-time-btn').style.display = 'inline-block';
+                document.getElementById('pee-time-input').value = '';
+            "
+        >
+            Cancel
+        </button>
+    </div>
+    
     <div
         id="pee-form-container"
         style="
@@ -291,6 +340,34 @@
             btn.style.opacity = 1;
         }
 
+        async function logPeeAtTime() {
+            const ts = document.getElementById('pee-time-input').value;
+        
+            if (!ts) {
+                alert('Please select a date and time.');
+                return;
+            }
+        
+            await fetch(LOG_CREATE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    action: 'pee',
+                    timestamp: ts
+                })
+            });
+        
+            await updateLogList();
+            await updateCounts();
+        
+            document.getElementById('pee-time-input').value = '';
+            document.getElementById('pee-time-form-container').style.display = 'none';
+            document.getElementById('pee-at-time-btn').style.display = 'inline-block';
+        }
+        
         /* --- PEE WITH VOLUME --- */
         async function logPeeWithVolume() {
             const volume = document.getElementById('volume-input').value;
