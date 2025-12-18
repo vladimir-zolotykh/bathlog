@@ -230,26 +230,30 @@
             "{% url 'note_autocomplete_json' %}";
 
         /* --- SELECT2 INITIALIZATION --- */
-        $(document).ready(function () {
-            $('#note-selector').select2({
-                placeholder: "Select or search for a note...",
-                allowClear: true,
-                tags: true,
-                ajax: {
-                    url: NOTE_AUTOCOMPLETE_URL,
-                    dataType: 'json',
-                    delay: 250,
-                    processResults: function (data) {
-                        return {
-                            results: data.map(item => ({
-                                id: item.id,
-                                text: item.text
-                            }))
-                        };
-                    },
-                    cache: true
+        $('#note-selector').select2({
+            placeholder: "Select or type a new note...",
+            allowClear: true,
+            tags: true,
+            ajax: {
+                url: NOTE_AUTOCOMPLETE_URL,
+                dataType: 'json',
+                delay: 250,
+                processResults: function (data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.id,
+                            text: item.text
+                        }))
+                    };
                 }
-            });
+            },
+            createTag: function (params) {
+                return {
+                    id: params.term,
+                    text: params.term,
+                    newTag: true   // KEY FLAG
+                };
+            }
         });
 
         /* --- UPDATE FUNCTIONS --- */
@@ -317,28 +321,33 @@
         }
         /* --- PILL WITH NOTE --- */
         async function logPillWithNote() {
-            const noteId = $('#note-selector').val();
-
-            if (!noteId) {
-                alert('Please select a note.');
+            const data = $('#note-selector').select2('data')[0];
+        
+            if (!data) {
+                alert('Please select or enter a note.');
                 return;
             }
-
+        
+            const payload = { action: 'pill' };
+        
+            if (data.newTag) {
+                payload.note_text = data.text;  // NEW NOTE
+            } else {
+                payload.note_id = data.id;       // EXISTING NOTE
+            }
+        
             await fetch(LOG_CREATE_URL, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: new URLSearchParams({
-                    action: 'pill',
-                    note_id: noteId
-                })
+                body: new URLSearchParams(payload)
             });
-
+        
             await updateLogList();
             await updateCounts();
-
+        
             $('#note-selector').val(null).trigger('change');
             document.getElementById('pill-form-container').style.display = 'none';
             document.getElementById('pill-with-note-btn').style.display = 'inline-block';

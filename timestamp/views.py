@@ -71,6 +71,7 @@ class LogCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         action = request.POST.get("action")
         note_id = request.POST.get("note_id")  # <--- Get the new ID
+        note_text = request.POST.get("note_text")
 
         # 1. Start with the creation data
         creation_kwargs = {"action": action}
@@ -93,6 +94,9 @@ class LogCreateView(CreateView):
             except Note.DoesNotExist:
                 # If the note ID is invalid, log or handle error
                 pass
+        elif note_text:
+            note_instance, _ = Note.objects.get_or_create(text=note_text.strip())
+            creation_kwargs["short_note_object"] = note_instance
 
         if action in ["pee", "pill"]:
             # Use the kwargs to create the entry
