@@ -13,7 +13,8 @@ class Note(models.Model):
 class LogEntry(models.Model):
     ACTION_CHOICES = [
         ("pee", "Pee"),
-        ("pill", "Pill"),  # ← changed from "poo"
+        ("poo", "Poo"),
+        ("pill", "Pill"),
     ]
 
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)

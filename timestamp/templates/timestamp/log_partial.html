@@ -10,10 +10,24 @@
         border: 1px solid #eee;
         border-radius: 5px;
         font-size: 1rem;
-        {% if entry.action == 'pee' %}color: #b8860b;{% else %}color: #2e7d32;{% endif %}
+        {% if entry.action == 'pee' %}
+            color: #b8860b;
+        {% elif entry.action == 'poo' %}
+            color: #5d4037;
+        {% else %}
+            color: #2e7d32;
+        {% endif %}
+
     ">
         <span>{{ entry.timestamp|date:"M d, H:i" }}</span>
-        <strong>{% if entry.action == 'pee' %}Pee{% else %}Pill{% endif %}</strong>
+
+        <strong>
+            {% if entry.action == 'pee' %}Pee
+            {% elif entry.action == 'poo' %}Poo
+            {% else %}Pill
+            {% endif %}
+        </strong>
+
         {% if entry.action == 'pee' and entry.volume %}
             <span class="pee-volume">
                 &nbsp; ({{ entry.volume }} ml)

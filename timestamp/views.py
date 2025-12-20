@@ -112,7 +112,7 @@ class LogCreateView(CreateView):
             note_instance, _ = Note.objects.get_or_create(text=note_text.strip())
             creation_kwargs["short_note_object"] = note_instance
 
-        if action in ["pee", "pill"]:
+        if action in ["pee", "poo", "pill"]:
             # Use the kwargs to create the entry
             LogEntry.objects.create(**creation_kwargs)
 
