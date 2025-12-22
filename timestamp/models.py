@@ -15,9 +15,17 @@ class LogEntry(models.Model):
         ("pee", "Pee"),
         ("poo", "Poo"),
         ("pill", "Pill"),
+        ("weight", "Weight"),
     ]
 
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    weight_kg = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Body weight in kg",
+    )
     timestamp = models.DateTimeField(default=timezone.now)
     volume = models.IntegerField(
         null=True, blank=True, help_text="Volume for pee (optional)"

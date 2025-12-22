@@ -100,6 +100,16 @@ class LogCreateView(CreateView):
 
         if volume is not None:
             creation_kwargs["volume"] = volume
+
+        if action == "weight":
+            weight_str = request.POST.get("weight_kg")
+            if not weight_str:
+                return HttpResponseBadRequest("Weight value required.")
+
+            try:
+                creation_kwargs["weight_kg"] = float(weight_str)
+            except ValueError:
+                return HttpResponseBadRequest("Invalid weight value.")
         if note_id:
             try:
                 # Check if the Note object exists
@@ -112,7 +122,7 @@ class LogCreateView(CreateView):
             note_instance, _ = Note.objects.get_or_create(text=note_text.strip())
             creation_kwargs["short_note_object"] = note_instance
 
-        if action in ["pee", "poo", "pill"]:
+        if action in ["pee", "poo", "pill", "weight"]:
             # Use the kwargs to create the entry
             LogEntry.objects.create(**creation_kwargs)
 

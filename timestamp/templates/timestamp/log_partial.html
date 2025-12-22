@@ -24,7 +24,8 @@
         <strong>
             {% if entry.action == 'pee' %}Pee
             {% elif entry.action == 'poo' %}Poo
-            {% else %}Pill
+            {% elif entry.action ==  'pill' %}Pill
+            {% else %}
             {% endif %}
         </strong>
 
@@ -33,6 +34,11 @@
                 &nbsp; ({{ entry.volume }} ml)
             </span>
         {% endif %}
+        {% if entry.action == 'weight' %}
+            <strong>Weight</strong>
+            <span>{{ entry.weight_kg }} kg</span>
+        {% endif %}
+
         {# Access the Note object and its 'text' field #}
         {% if entry.short_note_object %}
             <span class="note-text">

@@ -69,6 +69,26 @@
 
     <h2>Pee &amp; Pill Logger</h2>
 
+    <div style="margin-bottom: 10px; width: 300px;">
+        <input
+            type="number"
+            id="weight-input"
+            step="0.1"
+            min="20"
+            max="300"
+            placeholder="Weight (kg)"
+            value="{{ last_weight_kg|default_if_none:'' }}"
+            style="width: 100%; padding: 6px;"
+        >
+    
+        <button
+            style="margin-top: 6px;"
+            onclick="logWeight()"
+        >
+            Log Weight
+        </button>
+    </div>
+
     <!-- Main buttons -->
     <div class="btn-group">
         <button
@@ -509,6 +529,28 @@
             document.getElementById('pill-with-note-btn').style.display = 'inline-block';
         }
 
+        async function logWeight() {
+            const weight = document.getElementById('weight-input').value;
+        
+            if (!weight || isNaN(weight) || weight <= 0) {
+                alert("Enter a valid weight.");
+                return;
+            }
+        
+            await fetch(LOG_CREATE_URL, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    action: 'weight',
+                    weight_kg: weight
+                })
+            });
+        
+            await updateLogList();
+        }
         /* --- DELETE --- */
         async function removeLog(logId) {
             if (!confirm('Delete?')) {
